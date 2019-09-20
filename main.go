@@ -31,7 +31,7 @@ func pollRoutine() {
 	missCounter := prometheus.NewCounter(prometheus.CounterOpts{
 		Namespace:   "tm",
 		Subsystem:   "mon",
-		Name:        "misses",
+		Name:        "misses_count",
 		Help:        "Amount of missed blocks since exporter start",
 		ConstLabels: nil,
 	})

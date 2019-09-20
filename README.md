@@ -1,6 +1,6 @@
 ##Tendermint block miss exporter
 
-This prometheus exports watches a tendermint node and counts the blocks missed by a specific validator.
+This prometheus exporter watches a tendermint node and counts the blocks missed by a specific validator.
 
 The `tm_mon_misses` starts from zero and is incremented every time the specified validator misses a block.
 
