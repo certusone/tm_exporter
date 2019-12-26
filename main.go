@@ -51,11 +51,12 @@ func pollRoutine() {
 		panic(err)
 	}
 
+	ticker := time.NewTicker(time.Second)
 	var lastHeight int64
 OUTER:
 	for {
 		select {
-		case <-time.Tick(time.Second):
+		case <-ticker.C:
 			res, err := c.Block(nil)
 			if err != nil {
 				log.Printf("block could not be requested; err=%v\n", err)
