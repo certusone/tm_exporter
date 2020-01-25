@@ -1,4 +1,4 @@
-##Tendermint block miss exporter
+## Tendermint block miss exporter
 
 This prometheus exporter watches a tendermint node and counts the blocks missed by a specific validator.
 
@@ -6,7 +6,15 @@ The `tm_mon_misses` starts from zero and is incremented every time the specified
 
 In order to track whether the exporter is not stuck it also exposes the last processed height as `tm_mon_height`
 
-###Configuration
+### How to build
+
+Running `make build` will build artifacts to `bin`.
+
+The `Dockerfile` can also be used to build a container.
+
+We provide a prebuilt container image on [DockerHub](https://hub.docker.com/r/certusone/tm_exporter): `certusone/tm_exporter`
+
+### Configuration
 
 The configuration needs to be passed in via the environment.
 
