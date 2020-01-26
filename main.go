@@ -8,6 +8,7 @@ import (
 	"github.com/tendermint/tendermint/rpc/client"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 )
@@ -26,8 +27,34 @@ func main() {
 	panic(http.ListenAndServe(lAddr, nil))
 }
 
+type forceURL struct {
+	http.RoundTripper
+	forcedURL *url.URL
+}
+
+func (r *forceURL) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.URL = r.forcedURL
+	req.Host = r.forcedURL.Host
+	return r.RoundTripper.RoundTrip(req)
+}
+
 func pollRoutine() {
-	c := client.NewHTTP(rpcHost, "/ws")
+	u, err := url.Parse(rpcHost)
+	if err != nil {
+		log.Fatalf("invalid url: %v", err)
+	}
+
+	httpClient := &http.Client{
+		Transport: &forceURL{
+			RoundTripper: &http.Transport{
+				// Set to true to prevent GZIP-bomb DoS attacks
+				DisableCompression: true,
+			},
+			forcedURL: u,
+		},
+	}
+
+	c := client.NewHTTPWithClient("", "/ws", httpClient)
 	missCounter := prometheus.NewCounter(prometheus.CounterOpts{
 		Namespace:   "tm",
 		Subsystem:   "mon",
