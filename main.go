@@ -54,7 +54,10 @@ func pollRoutine() {
 		},
 	}
 
-	c := client.NewHTTPWithClient("", "/ws", httpClient)
+	c, err := client.NewHTTPWithClient("", "/ws", httpClient)
+	if err != nil {
+		log.Fatalf("failed to create rpc client: %v", err)
+	}
 	missCounter := prometheus.NewCounter(prometheus.CounterOpts{
 		Namespace:   "tm",
 		Subsystem:   "mon",
@@ -94,8 +97,8 @@ OUTER:
 				lastHeight = res.Block.Height
 				heightGauge.Set(float64(lastHeight))
 
-				for _, pre := range res.Block.LastCommit.Precommits {
-					if pre != nil && bytes.Equal(validatorAddress, pre.ValidatorAddress) && !pre.BlockID.IsZero() {
+				for _, pre := range res.Block.LastCommit.Signatures {
+					if bytes.Equal(validatorAddress, pre.ValidatorAddress) && pre.ForBlock() {
 						// We signed and the vote is not zero (nil votes also count as downtime)
 						continue OUTER
 					}
