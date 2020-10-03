@@ -5,10 +5,9 @@ import (
 	"encoding/hex"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/tendermint/tendermint/rpc/client"
+	tmhttp "github.com/tendermint/tendermint/rpc/client/http"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"time"
 )
@@ -27,34 +26,8 @@ func main() {
 	panic(http.ListenAndServe(lAddr, nil))
 }
 
-type forceURL struct {
-	http.RoundTripper
-	forcedURL *url.URL
-}
-
-func (r *forceURL) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.URL = r.forcedURL
-	req.Host = r.forcedURL.Host
-	return r.RoundTripper.RoundTrip(req)
-}
-
 func pollRoutine() {
-	u, err := url.Parse(rpcHost)
-	if err != nil {
-		log.Fatalf("invalid url: %v", err)
-	}
-
-	httpClient := &http.Client{
-		Transport: &forceURL{
-			RoundTripper: &http.Transport{
-				// Set to true to prevent GZIP-bomb DoS attacks
-				DisableCompression: true,
-			},
-			forcedURL: u,
-		},
-	}
-
-	c, err := client.NewHTTPWithClient("", "/ws", httpClient)
+	c, err := tmhttp.NewWithClient(rpcHost, "/ws", http.DefaultClient)
 	if err != nil {
 		log.Fatalf("failed to create rpc client: %v", err)
 	}
